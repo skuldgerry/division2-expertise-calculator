@@ -1,0 +1,245 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #1c1c1c;
+    color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden; /* Prevent page scrolling */
+}
+
+.container {
+    background-color: #2c2c2c;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    max-width: 900px;
+    height: 90vh; /* Occupy most of the viewport height */
+    overflow-y: auto; /* Enable scrolling within the container */
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Style for the title link */
+.title-link {
+    color: #f0f0f0; /* Keep it white */
+    text-decoration: none; /* Remove underline */
+    font-weight: bold; /* Keep it bold */
+}
+
+.title-link:hover {
+    color: #f0f0f0; /* Keep it white on hover */
+    text-decoration: none; /* No underline on hover */
+}
+
+.title-link:focus,
+.title-link:active {
+    outline: none;
+    color: #f0f0f0; /* Maintain white color when focused or active */
+}
+
+.item {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.resource-icon {
+    width: 32px; /* Adjust size as necessary */
+    height: 32px;
+    vertical-align: middle;
+    margin-right: 5px; /* Optional: spacing between icons and text */
+    margin-left: 5px; /* Optional: space before the icon for better alignment */
+    margin-top: 5px; /* Add space above the icon */
+    margin-bottom: 5px; /* Add space below the icon */
+}
+
+.field-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 10px;
+    max-width: 200px; /* Adjust this to manage spacing */
+}
+
+.field-group label {
+    margin-bottom: 5px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.field-group input, 
+.field-group select {
+    width: 100%;
+    padding: 10px; /* Adjusted padding to maintain field size */
+    font-size: 14px;  /* Smaller font size */
+    border-radius: 4px;
+    border: 1px solid #444;
+    background-color: #444;
+    color: #f0f0f0;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.field-group input::placeholder {
+    color: #ccc;
+    opacity: 1;
+}
+
+.field-group input.item-name {
+    max-width: 250px;
+}
+
+.remove-item {
+    background-color: #ff5722;
+    color: #f0f0f0;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-top: 20px;
+    margin-left: 10px; /* Added margin for spacing */
+}
+
+/* Special styling for the first row's remove button */
+.first-row-remove-button {
+    background-color: #444; /* Change the first row's button color to grey */
+    cursor: default; /* Disable cursor to show it's non-functional */
+}
+
+button {
+    background-color: #ff5722;
+    color: #f0f0f0;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+    text-align: center;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #ff784e;
+}
+
+#add-item {
+    margin-top: 20px;
+    width: 100%;
+    text-align: center;
+}
+
+#calculate {
+    margin-top: 20px;
+    width: 50%;  /* Make the Calculate Resources button half the width */
+    text-align: center;
+    font-weight: bold; /* Make the text bold */
+    margin-left: auto;
+    margin-right: auto;
+    display: block; /* Center the button */
+}
+
+#results {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #333;
+    border-radius: 4px;
+    overflow-y: auto; /* Enable scrolling within the results container */
+    max-height: 600px; /* Extended height of the results container */
+    height: 600px; /* Set a fixed height */
+}
+
+.highlight {
+    color: #ff5722; /* Use the same color as your buttons */
+    font-weight: bold; /* Make it bold to stand out */
+}
+
+.total-resources-title {
+    color: #ff5722 !important; /* Match the color of the buttons */
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.item-title {
+    font-weight: bold;
+}
+
+.item-title .item-name {
+    color: #ff5722; /* Highlight the item name */
+}
+
+#spoiler-container {
+    margin-top: 10px; /* Add a small gap between the button and the container */
+    padding: 10px;
+    background-color: #333; /* Same background color as the #results container */
+    border-radius: 4px;
+    overflow-y: auto;
+    max-height: 200px; /* Limit the height of the spoiler content */
+}
+
+#common-levels-toggle {
+    background-color: #ff5722;
+    color: #f0f0f0;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px auto 0 auto; /* Adjust margin to place the button above the spoiler container */
+    text-align: center;
+    font-size: 24px;
+    padding: 0; /* Ensure there is no extra padding */
+}
+
+#common-levels-toggle img {
+    width: 24px;
+    height: 24px;
+}
+
+#common-levels {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two equal-width columns */
+    gap: 10px; /* Adjust the space between items as needed */
+    padding: 10px;
+}
+
+.common-level-item {
+    break-inside: avoid; /* Prevent column break inside items */
+    width: 95%; /* Ensure full width usage in each column */
+    padding: 10px;
+    border: 1px solid #444; /* Add border around each item */
+    border-radius: 4px; /* Optional: Add some rounding to corners */
+    background-color: #333; /* Optional: Different background color for each item */
+    margin-bottom: 10px; /* Space between items in the grid */
+}
+
+.common-level-item h3 {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.common-level-item ul {
+    padding-left: 20px; /* Indent the list for better readability */
+}
+
+button:focus {
+    outline: none;
+}

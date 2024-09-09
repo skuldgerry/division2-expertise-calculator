@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Division 2 Expertise Calculator</title>
+    <link rel="stylesheet" href="styles/styles.css">
+    <link rel="icon" href="data/favicon.png" type="image/png" sizes="48x48"> <!-- Favicon Link -->
+</head>
+<body>
+    <div class="container">
+        <h1><a href="#" id="reset-calculator" class="title-link">Division 2 Expertise Calculator</a></h1>
+
+        <div id="item-list">
+            <div class="item">
+                <div class="field-group">
+                    <label>Category</label>
+                    <select class="category">
+                        <option value="weapon">Weapon</option>
+                        <option value="gear">Gear</option>
+                        <option value="skill">Skill</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label>Item Name</label>
+                    <input type="text" class="item-name" placeholder="Enter item name (optional)">
+                </div>
+                <div class="field-group">
+                    <label>Initial Level</label>
+                    <input type="number" class="initial-level" min="0" max="26" value="0">
+                </div>
+                <div class="field-group">
+                    <label>Target Level</label>
+                    <input type="number" class="target-level" min="1" max="26" value="26">
+                </div>
+                <div class="input-group remove-button-group">
+                    <button class="remove-item first-row-remove-button" style="background-color: #444; cursor: default;" disabled>
+                        <img src="data/remove-icon.png" alt="Remove" class="remove-icon">
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <button id="add-item">Add another item</button>
+        <button id="calculate">Calculate Resources</button>
+
+        <div id="results"></div>
+
+        <!-- Spoiler button placed above the container -->
+        <button id="common-levels-toggle">
+            <img src="data/plus-icon.png" alt="Toggle Common Levels">
+        </button>
+        <!-- Spoiler content -->
+        <div id="spoiler-container">
+            <div id="common-levels"></div>
+        </div>
+    </div>
+
+    <script src="scripts/script.js"></script>
+</body>
+</html>
