@@ -1,4 +1,4 @@
-Division 2 Expertise Calculator
+# Division 2 Expertise Calculator
 
 This is a simple web-based tool designed to help players of The Division 2 calculate the resources required to level up their weapons, gear, and skills in the game's Expertise system.
 
