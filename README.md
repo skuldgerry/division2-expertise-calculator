@@ -82,10 +82,10 @@ If you'd like to run this Division 2 Expertise Calculator using Docker, follow t
 
 # Usage
 
-    Open the calculator in your browser.
-    Add items by selecting a category (Weapon, Gear, or Skill) and specifying the initial and target levels.
-    Click "Calculate Resources" to see the total materials required.
-    Use the spoiler button to view resource totals at common level milestones.
+1. Open the calculator in your browser.
+2. Add items by selecting a category (Weapon, Gear, or Skill) and specifying the initial and target levels.
+3. Click "Calculate Resources" to see the total materials required.
+4. Use the spoiler button to view resource totals at common level milestones.
 
 ## Demo
 
