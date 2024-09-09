@@ -91,7 +91,7 @@ If you'd like to run this Division 2 Expertise Calculator using Docker, follow t
 
 You can check out a live version of the tool hosted on GitHub Pages:
 
-    Division 2 Expertise Calculator
+    [Division 2 Expertise Calculator](https://skuldgerry.github.io/division2-expertise-calculator/)
 
 ## Built With AI
 
