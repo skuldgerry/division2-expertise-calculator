@@ -12,13 +12,13 @@ Features
     Icon Integration: Displays both text and icons for the resources, weapons, gear, and skills.
     Spoiler Section: Hide or show cumulative resource details with a toggle button.
 
-Getting Started
-Prerequisites
+## Getting Started
+### Prerequisites
 
     Any modern web browser (Chrome, Firefox, Safari, Edge).
     No installations or third-party dependencies required.
 
-Installation
+## Installation
 
     Clone this repository or download it as a zip.
 
@@ -28,7 +28,7 @@ Installation
 
     Open the index.html file in a browser.
 
-Hosting
+## Hosting
 
 You can also host this on GitHub Pages. Simply push the repository to GitHub and enable GitHub Pages for the main branch.
 Usage
@@ -38,13 +38,13 @@ Usage
     Click "Calculate Resources" to see the total materials required.
     Use the spoiler button to view resource totals at common level milestones.
 
-Demo
+## Demo
 
 You can check out a live version of the tool hosted on GitHub Pages:
 
     Division 2 Expertise Calculator
 
-Built With AI
+## Built With AI
 
 This tool was developed with the assistance of OpenAI's GPT-4 model. From brainstorming ideas to solving specific challenges in the code, AI played a significant role in the creation of this calculator.
 License
