@@ -112,7 +112,7 @@ function clearInputs() {
             input.value = "";
         } else if (input.type === "number") {
             if (input.classList.contains('target-level')) {
-                input.value = 26; // Reset Target Level to 26
+                input.value = 27; // Reset Target Level to 27
             } else {
                 input.value = input.min; // Reset other numbers to their min value
             }
