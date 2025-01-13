@@ -28,7 +28,8 @@ const expertiseData = {
         { level: 23, ceramic: 0, titanium: 0, receiver_components: 0, shd_calibration: 6, field_recon_data: 12, exotic_components: 6 },
         { level: 24, ceramic: 0, titanium: 0, receiver_components: 0, shd_calibration: 6, field_recon_data: 12, exotic_components: 6 },
         { level: 25, ceramic: 0, titanium: 0, receiver_components: 0, shd_calibration: 7, field_recon_data: 13, exotic_components: 7 },
-        { level: 26, ceramic: 0, titanium: 0, receiver_components: 0, shd_calibration: 7, field_recon_data: 14, exotic_components: 7 }
+        { level: 26, ceramic: 0, titanium: 0, receiver_components: 0, shd_calibration: 7, field_recon_data: 14, exotic_components: 7 },
+        { level: 27, ceramic: 0, titanium: 0, receiver_components: 0, shd_calibration: 8, field_recon_data: 14, exotic_components: 8 }
     ],
     gear: [
         { level: 1, polycarbonate: 61, carbon_fiber: 40, protective_fabric: 65, shd_calibration: 0, field_recon_data: 0, exotic_components: 0 },
@@ -56,7 +57,8 @@ const expertiseData = {
         { level: 23, polycarbonate: 0, carbon_fiber: 0, protective_fabric: 0, shd_calibration: 6, field_recon_data: 12, exotic_components: 6 },
         { level: 24, polycarbonate: 0, carbon_fiber: 0, protective_fabric: 0, shd_calibration: 6, field_recon_data: 12, exotic_components: 6 },
         { level: 25, polycarbonate: 0, carbon_fiber: 0, protective_fabric: 0, shd_calibration: 7, field_recon_data: 13, exotic_components: 7 },
-        { level: 26, polycarbonate: 0, carbon_fiber: 0, protective_fabric: 0, shd_calibration: 7, field_recon_data: 14, exotic_components: 7 }
+        { level: 26, polycarbonate: 0, carbon_fiber: 0, protective_fabric: 0, shd_calibration: 7, field_recon_data: 14, exotic_components: 7 },
+        { level: 27, polycarbonate: 0, carbon_fiber: 0, protective_fabric: 0, shd_calibration: 8, field_recon_data: 14, exotic_components: 8 }
     ],
     skill: [
         { level: 1, ceramic: 122, electronics: 76, printer_filament: 130, shd_calibration: 0, field_recon_data: 0, exotic_components: 0 },
@@ -84,7 +86,8 @@ const expertiseData = {
         { level: 23, ceramic: 0, electronics: 0, printer_filament: 0, shd_calibration: 6, field_recon_data: 12, exotic_components: 6 },
         { level: 24, ceramic: 0, electronics: 0, printer_filament: 0, shd_calibration: 6, field_recon_data: 12, exotic_components: 6 },
         { level: 25, ceramic: 0, electronics: 0, printer_filament: 0, shd_calibration: 7, field_recon_data: 13, exotic_components: 7 },
-        { level: 26, ceramic: 0, electronics: 0, printer_filament: 0, shd_calibration: 7, field_recon_data: 14, exotic_components: 7 }
+        { level: 26, ceramic: 0, electronics: 0, printer_filament: 0, shd_calibration: 7, field_recon_data: 14, exotic_components: 7 },
+        { level: 27, ceramic: 0, electronics: 0, printer_filament: 0, shd_calibration: 8, field_recon_data: 14, exotic_components: 8 }
     ]
 };
 
@@ -150,11 +153,11 @@ function addItemWithStyles() {
         </div>
         <div class="field-group">
             <label>Initial Level</label>
-            <input type="number" class="initial-level" min="0" max="26" value="0">
+            <input type="number" class="initial-level" min="0" max="27" value="0">
         </div>
         <div class="field-group">
             <label>Target Level</label>
-            <input type="number" class="target-level" min="1" max="26" value="26">
+            <input type="number" class="target-level" min="1" max="27" value="27">
         </div>
         ${itemCount > 0 ? `
         <div class="input-group remove-button-group">
