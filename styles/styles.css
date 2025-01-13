@@ -243,9 +243,3 @@ button:hover {
 button:focus {
     outline: none;
 }
-
-/* Update any max-width or height values if needed to accommodate the new level */
-.field-group input[type="number"] {
-    width: 100%;
-    max-width: 80px; /* Adjust if needed to fit level 27 */
-}
