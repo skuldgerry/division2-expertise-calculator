@@ -13,6 +13,7 @@ import {
   OFFICIAL_CAP_SOURCE,
   RESOURCES,
   RESOURCE_ORDER,
+  assetPath,
   calculateUpgradeCost,
   combineCosts,
   formatNumber,
@@ -414,7 +415,7 @@ export function ExpertisePlanner() {
                                 <span className="duplicate-icon" aria-hidden="true" />
                               </button>
                               <button type="button" onClick={() => removeItem(item.id)} aria-label={`Remove ${itemLabel(item, index)}`} title="Remove item">
-                                <img src="/resources/remove-icon.png" alt="" width="20" height="20" />
+                                <img src={assetPath("/resources/remove-icon.png")} alt="" width="20" height="20" />
                               </button>
                             </div>
                           </div>

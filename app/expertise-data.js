@@ -6,94 +6,97 @@ export const COST_DATA_SOURCE =
 export const OFFICIAL_CAP_SOURCE =
   "https://www.ubisoft.com/en-au/game/the-division/news-updates/3DFEM2OnnbfRsDrQWXsbbO/the-division-2-the-pact";
 
+export const assetPath = (path) =>
+  `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}${path}`;
+
 export const CATEGORIES = {
-  weapon: { label: "Weapon", icon: "/resources/weapon-icon.png" },
-  gear: { label: "Gear", icon: "/resources/gear-icon.png" },
-  skill: { label: "Skill", icon: "/resources/skill-icon.png" },
+  weapon: { label: "Weapon", icon: assetPath("/resources/weapon-icon.png") },
+  gear: { label: "Gear", icon: assetPath("/resources/gear-icon.png") },
+  skill: { label: "Skill", icon: assetPath("/resources/skill-icon.png") },
 };
 
 export const RESOURCES = {
   exotic_components: {
     label: "Exotic Components",
     shortLabel: "Exotics",
-    icon: "/resources/exotic_components-icon.png",
+    icon: assetPath("/resources/exotic_components-icon.png"),
     group: "advanced",
     color: "#ff6a13",
   },
   shd_calibration: {
     label: "SHD Calibration",
     shortLabel: "SHD Calibration",
-    icon: "/resources/shd_calibration-icon.png",
+    icon: assetPath("/resources/shd_calibration-icon.png"),
     group: "advanced",
     color: "#ffc857",
   },
   field_recon_data: {
     label: "Field Recon Data",
     shortLabel: "Recon Data",
-    icon: "/resources/field_recon_data-icon.png",
+    icon: assetPath("/resources/field_recon_data-icon.png"),
     group: "advanced",
     color: "#e5a43a",
   },
   steel: {
     label: "Steel",
     shortLabel: "Steel",
-    icon: "/resources/steel-icon.png",
+    icon: assetPath("/resources/steel-icon.png"),
     group: "common",
     color: "#79d65c",
   },
   titanium: {
     label: "Titanium",
     shortLabel: "Titanium",
-    icon: "/resources/titanium-icon.png",
+    icon: assetPath("/resources/titanium-icon.png"),
     group: "common",
     color: "#5aa9ff",
   },
   receiver_components: {
     label: "Receiver Components",
     shortLabel: "Receiver Parts",
-    icon: "/resources/receiver_components-icon.png",
+    icon: assetPath("/resources/receiver_components-icon.png"),
     group: "common",
     color: "#bac7d0",
   },
   polycarbonate: {
     label: "Polycarbonate",
     shortLabel: "Polycarbonate",
-    icon: "/resources/polycarbonate-icon.png",
+    icon: assetPath("/resources/polycarbonate-icon.png"),
     group: "common",
     color: "#7bd65c",
   },
   carbon_fiber: {
     label: "Carbon Fiber",
     shortLabel: "Carbon Fiber",
-    icon: "/resources/carbon_fiber-icon.png",
+    icon: assetPath("/resources/carbon_fiber-icon.png"),
     group: "common",
     color: "#5ea3ee",
   },
   protective_fabric: {
     label: "Protective Fabric",
     shortLabel: "Protective Fabric",
-    icon: "/resources/protective_fabric-icon.png",
+    icon: assetPath("/resources/protective_fabric-icon.png"),
     group: "common",
     color: "#c9d0d5",
   },
   ceramic: {
     label: "Ceramics",
     shortLabel: "Ceramics",
-    icon: "/resources/ceramics-icon.png",
+    icon: assetPath("/resources/ceramics-icon.png"),
     group: "common",
     color: "#7bd65c",
   },
   electronics: {
     label: "Electronics",
     shortLabel: "Electronics",
-    icon: "/resources/eletronics-icon.png",
+    icon: assetPath("/resources/eletronics-icon.png"),
     group: "common",
     color: "#5aa9ff",
   },
   printer_filament: {
     label: "Printer Filament",
     shortLabel: "Printer Filament",
-    icon: "/resources/printer_filament-icon.png",
+    icon: assetPath("/resources/printer_filament-icon.png"),
     group: "common",
     color: "#f067d7",
   },
@@ -235,4 +238,3 @@ export function combineCosts(costs) {
 export function formatNumber(value) {
   return new Intl.NumberFormat("en-US").format(value || 0);
 }
-

@@ -1,7 +1,13 @@
 {
-  "name": "division2-expertise-planner",
+  "name": "division2-expertise-calculator",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
+  "homepage": "https://skuldgerry.github.io/division2-expertise-calculator/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/skuldgerry/division2-expertise-calculator.git"
+  },
   "engines": {
     "node": ">=22.13.0"
   },
