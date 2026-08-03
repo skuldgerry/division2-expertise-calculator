@@ -294,8 +294,9 @@ main {
 
 .summary-readout span,
 .resource-columns span,
-.item-fields label > span,
-.level-values label > span,
+.item-fields > label > span,
+.quantity-field > span,
+.level-control > span,
 .manifest-summary span {
   color: var(--muted);
   font-size: 10px;
@@ -537,12 +538,13 @@ main {
 .item-fields {
   display: grid;
   padding: 14px 18px 0;
-  grid-template-columns: minmax(0, 1fr) 110px;
+  grid-template-columns: minmax(0, 1fr) 170px;
   gap: 16px;
 }
 
 .item-fields label,
-.level-values label {
+.quantity-field,
+.level-control {
   display: flex;
   flex-direction: column;
   gap: 7px;
@@ -570,27 +572,82 @@ input::placeholder {
   color: var(--faint);
 }
 
-.quantity-field input,
-.level-values input {
+.number-stepper input {
   font-family: var(--display);
   font-size: 21px;
   font-weight: 600;
   text-align: center;
 }
 
+.number-stepper {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 44px minmax(52px, 1fr) 44px;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  background: var(--field);
+}
+
+.number-stepper button {
+  display: grid;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  background: var(--panel-soft);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.number-stepper button:first-child {
+  border-right: 1px solid var(--line);
+}
+
+.number-stepper button:last-child {
+  border-left: 1px solid var(--line);
+}
+
+.number-stepper button:hover:not(:disabled) {
+  background: var(--orange-soft);
+  color: var(--orange);
+}
+
+.number-stepper button:disabled {
+  color: var(--faint);
+  opacity: 0.42;
+}
+
+.number-stepper input[type="number"] {
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 4px;
+  appearance: textfield;
+  border: 0;
+  background: transparent;
+}
+
+.number-stepper input[type="number"]::-webkit-inner-spin-button,
+.number-stepper input[type="number"]::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
 .level-editor {
   display: grid;
   padding: 16px 18px;
-  grid-template-columns: 205px minmax(130px, 1fr) auto;
+  grid-template-columns: 320px minmax(130px, 1fr) auto;
   align-items: end;
   gap: 16px;
 }
 
 .level-values {
   display: grid;
-  grid-template-columns: 1fr 22px 1fr;
+  grid-template-columns: minmax(138px, 1fr) 24px minmax(138px, 1fr);
   align-items: end;
-  gap: 6px;
+  gap: 8px;
 }
 
 .level-arrow {
@@ -1176,7 +1233,7 @@ footer a:hover {
   }
 
   .level-editor {
-    grid-template-columns: 205px minmax(120px, 1fr);
+    grid-template-columns: 320px minmax(120px, 1fr);
   }
 
   .quick-targets {
@@ -1302,7 +1359,7 @@ footer a:hover {
 
   .item-fields {
     padding: 14px 14px 0;
-    grid-template-columns: minmax(0, 1fr) 90px;
+    grid-template-columns: minmax(0, 1fr) 170px;
   }
 
   .level-editor {
@@ -1461,7 +1518,16 @@ footer a:hover {
   }
 
   .quantity-field {
-    max-width: 110px;
+    max-width: 170px;
+  }
+
+  .level-values {
+    grid-template-columns: 1fr;
+  }
+
+  .level-arrow {
+    min-height: 24px;
+    transform: rotate(90deg);
   }
 
   .item-cost-preview > div {

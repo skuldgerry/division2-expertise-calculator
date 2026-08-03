@@ -51,6 +51,49 @@ function itemLabel(item: PlanItem, index: number) {
   return item.name.trim() || `${CATEGORIES[item.category].label} ${index + 1}`;
 }
 
+type NumberStepperProps = {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  onChange: (value: number) => void;
+};
+
+function NumberStepper({ label, value, min, max, onChange }: NumberStepperProps) {
+  const setValue = (nextValue: number) => onChange(clamp(nextValue, min, max));
+
+  return (
+    <div className="number-stepper" role="group" aria-label={`${label} controls`}>
+      <button
+        type="button"
+        aria-label={`Decrease ${label}`}
+        disabled={value <= min}
+        onClick={() => setValue(value - 1)}
+      >
+        <span aria-hidden="true">−</span>
+      </button>
+      <input
+        type="number"
+        inputMode="numeric"
+        step="1"
+        min={min}
+        max={max}
+        value={value}
+        aria-label={label}
+        onChange={(event) => setValue(Number(event.target.value))}
+      />
+      <button
+        type="button"
+        aria-label={`Increase ${label}`}
+        disabled={value >= max}
+        onClick={() => setValue(value + 1)}
+      >
+        <span aria-hidden="true">+</span>
+      </button>
+    </div>
+  );
+}
+
 export function ExpertisePlanner() {
   const [items, setItems] = useState<PlanItem[]>([defaultItem]);
   const [expandedResource, setExpandedResource] = useState<string | null>(null);
@@ -363,41 +406,41 @@ export function ExpertisePlanner() {
                                 placeholder={item.category === "weapon" ? "e.g. St. Elmo's Engine" : item.category === "gear" ? "e.g. Striker's Kneepads" : "e.g. Assault Turret"}
                               />
                             </label>
-                            <label className="quantity-field">
+                            <div className="quantity-field">
                               <span>Quantity</span>
-                              <input
-                                type="number"
-                                min="1"
-                                max="12"
+                              <NumberStepper
+                                label={`Quantity for item ${index + 1}`}
+                                min={1}
+                                max={12}
                                 value={item.quantity}
-                                onChange={(event) => updateItem(item.id, { quantity: clamp(Number(event.target.value), 1, 12) })}
+                                onChange={(quantity) => updateItem(item.id, { quantity })}
                               />
-                            </label>
+                            </div>
                           </div>
 
                           <div className="level-editor">
                             <div className="level-values">
-                              <label>
+                              <div className="level-control">
                                 <span>Current level</span>
-                                <input
-                                  type="number"
-                                  min="0"
+                                <NumberStepper
+                                  label={`Current level for ${itemLabel(item, index)}`}
+                                  min={0}
                                   max={item.target}
                                   value={item.start}
-                                  onChange={(event) => updateItem(item.id, { start: clamp(Number(event.target.value), 0, item.target) })}
+                                  onChange={(start) => updateItem(item.id, { start })}
                                 />
-                              </label>
+                              </div>
                               <span className="level-arrow" aria-hidden="true">→</span>
-                              <label>
+                              <div className="level-control">
                                 <span>Target level</span>
-                                <input
-                                  type="number"
+                                <NumberStepper
+                                  label={`Target level for ${itemLabel(item, index)}`}
                                   min={item.start}
                                   max={MAX_EXPERTISE_LEVEL}
                                   value={item.target}
-                                  onChange={(event) => updateItem(item.id, { target: clamp(Number(event.target.value), item.start, MAX_EXPERTISE_LEVEL) })}
+                                  onChange={(target) => updateItem(item.id, { target })}
                                 />
-                              </label>
+                              </div>
                             </div>
                             <label className="range-label">
                               <span className="sr-only">Target Expertise level for {itemLabel(item, index)}</span>
