@@ -1,102 +1,45 @@
-# Division 2 Expertise Calculator
+# SHD Quartermaster
 
-This is a simple web-based tool designed to help players of The Division 2 calculate the resources required to level up their weapons, gear, and skills in the game's Expertise system.
+An interactive resource planner for *Tom Clancy's The Division 2* Expertise system. Build a multi-item upgrade plan for weapons, gear, and skills, then see the complete material manifest update instantly.
 
-The calculator allows users to input multiple items, set initial and target levels, and provides a detailed breakdown of the materials required to achieve the specified level. Additionally, it displays cumulative resource requirements across all selected items, including common level milestones.
-Features
+## Highlights
 
-    Add Multiple Items: Calculate resource requirements for weapons, gear, and skills all at once.
-    Initial and Target Levels: Choose starting and goal levels for each item.
-    Detailed Resource Breakdown: The calculator provides a detailed list of materials like steel, polycarbonate, ceramics, and more, required for each item.
-    Common Levels: Display cumulative resources for specific common levels across all items.
-    Icon Integration: Displays both text and icons for the resources, weapons, gear, and skills.
-    Spoiler Section: Hide or show cumulative resource details with a toggle button.
+- Current Expertise range from level 0 through 30
+- Y8S1 upgrade costs, including the reduced weapon/gear costs and the skill-material exception
+- Live combined totals for up to 12 plan entries
+- Item names, categories, quantities, duplicate/remove controls, and target presets
+- Expandable per-resource contribution breakdowns
+- Optional inventory mode showing covered materials and shortfalls
+- Checkpoint comparisons and advanced-material cost trajectory
+- Device-local plan persistence and copyable text summaries
+- Responsive, keyboard-accessible interface
 
-## Getting Started
-### Prerequisites
+## Cost data
 
-    Any modern web browser (Chrome, Firefox, Safari, Edge).
-    No installations or third-party dependencies required.
+The calculator uses the community-maintained [Y8S1 Expertise Upgrade Cost Table, revision 2](https://www.reddit.com/r/thedivision/comments/1sasd3y/expertise_upgrades_table_updated_to_y8s1/), published 3 April 2026. The maximum Expertise level of 30 is documented by Ubisoft in [The Division 2: The Pact](https://www.ubisoft.com/en-au/game/the-division/news-updates/3DFEM2OnnbfRsDrQWXsbbO/the-division-2-the-pact).
 
-## Installation
+Skills intentionally use a separate schedule: post-update in-game testing found that their normal crafting-material costs did not receive the same 20% reduction as weapons and gear. Exotic Component costs were reduced for all categories.
 
-    Clone this repository or download it as a zip.
+## Local development
 
-    bash
+Requires Node.js 22.13 or newer.
 
-    git clone https://github.com/your-username/division2-expertise-calculator.git
+```bash
+npm ci
+npm run dev
+```
 
-    Open the index.html file in a browser.
+Open the local address shown by the development server.
 
-## Hosting
+## Validation
 
-### GitHub Pages
+```bash
+npm test
+npm run lint
+```
 
-You can host this on GitHub Pages. Simply push the repository to GitHub and enable GitHub Pages for the main branch by following these steps:
-
-1. Go to your repository on GitHub.
-2. Click on **Settings**.
-3. Scroll down to the **GitHub Pages** section.
-4. Under **Source**, select the branch (main or master) where your `index.html` is located and save.
-
-Once enabled, your calculator will be accessible via the provided GitHub Pages URL.
-
-### Docker
-
-If you'd like to run this Division 2 Expertise Calculator using Docker, follow these steps:
-
-1. **Clone the repository**:
-    ```bash
-    git clone https://github.com/skuldgerry/division2-expertise-calculator.git
-    cd division2-expertise-calculator
-    ```
-
-2. **Build the Docker image**:
-    Make sure Docker is installed and running on your machine. Then build the Docker image by running:
-    ```bash
-    docker build -t division2-expertise-calculator .
-    ```
-
-3. **Run the Docker container**:
-    After the build is complete, you can run the Docker container:
-    ```bash
-    docker run -d -p 8080:80 division2-expertise-calculator
-    ```
-
-4. **Access the application**:
-    Once the container is running, open your browser and navigate to:
-    ```
-    http://localhost:8080
-    ```
-    You should see the Division 2 Expertise Calculator running locally.
-
-5. **Stopping the container**:
-    To stop the running container, find its ID and stop it using:
-    ```bash
-    docker ps
-    docker stop <container_id>
-    ```
-
----
-
-
-# Usage
-
-1. Open the calculator in your browser.
-2. Add items by selecting a category (Weapon, Gear, or Skill) and specifying the initial and target levels.
-3. Click "Calculate Resources" to see the total materials required.
-4. Use the spoiler button to view resource totals at common level milestones.
-
-## Demo
-
-You can check out a live version of the tool hosted on GitHub Pages:
-
-[Division 2 Expertise Calculator](https://skuldgerry.github.io/division2-expertise-calculator/)
-
-## Built With AI
-
-This tool was developed with the assistance of OpenAI's GPT-4 model. From brainstorming ideas to solving specific challenges in the code, AI played a significant role in the creation of this calculator.
+The test suite builds the Cloudflare Worker-compatible output, verifies the server-rendered interface, and checks known 0→30 totals plus calculation boundaries.
 
 ## License
 
-This project is licensed under the MIT License, meaning you can use, modify, and distribute the project freely as long as proper credit is given.
+MIT. The Division, Ubisoft, and Massive Entertainment names and imagery belong to their respective owners. This is an unofficial community project.
