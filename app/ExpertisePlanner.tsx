@@ -33,6 +33,7 @@ type Totals = Record<string, number>;
 const STORAGE_KEY = "expertise-calculator-plan-v3";
 const THEME_KEY = "expertise-calculator-theme";
 const CHECKPOINTS = [10, 15, 20, 25, 30];
+const MAX_INVENTORY_VALUE = 9_999_999;
 
 const defaultItem: PlanItem = {
   id: "item-1",
@@ -660,14 +661,17 @@ export function ExpertisePlanner() {
                       </button>
                       <strong className="required-value">{formatNumber(total)}</strong>
                       {inventoryMode && (
-                        <input
-                          className="inventory-input"
-                          type="number"
-                          min="0"
-                          value={owned}
-                          aria-label={`${meta.label} in inventory`}
-                          onChange={(event) => setInventory((current) => ({ ...current, [resource]: Math.max(0, Number(event.target.value) || 0) }))}
-                        />
+                        <div className="inventory-stepper">
+                          <NumberStepper
+                            label={`${meta.label} in inventory`}
+                            min={0}
+                            max={MAX_INVENTORY_VALUE}
+                            value={owned}
+                            onChange={(value) =>
+                              setInventory((current) => ({ ...current, [resource]: value }))
+                            }
+                          />
+                        </div>
                       )}
                       {inventoryMode && (
                         <span className={`resource-status ${covered ? "covered" : "shortfall"}`} title={covered ? "Covered" : `${formatNumber(total - owned)} short`}>

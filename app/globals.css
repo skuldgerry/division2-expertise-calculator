@@ -1007,7 +1007,7 @@ input[type="range"]::-moz-range-thumb {
 
 .inventory-active .resource-columns,
 .inventory-active .resource-main {
-  grid-template-columns: minmax(0, 1fr) 82px 96px 38px;
+  grid-template-columns: minmax(0, 1fr) 82px 148px 38px;
 }
 
 .resource-columns {
@@ -1103,13 +1103,14 @@ input[type="range"]::-moz-range-thumb {
   text-align: center;
 }
 
-.inventory-input {
-  min-height: 42px !important;
-  padding: 0 7px !important;
-  color: var(--green) !important;
+.inventory-stepper {
+  min-width: 0;
+}
+
+.inventory-stepper .number-stepper input {
+  color: var(--green);
   font-size: 18px;
   font-weight: 700;
-  text-align: center;
 }
 
 .resource-status {
@@ -1354,7 +1355,7 @@ footer a:hover {
   }
 }
 
-@media (max-width: 1040px) {
+@media (max-width: 1120px) {
   .command-bar {
     flex-wrap: wrap;
     padding-top: 10px;
@@ -1523,14 +1524,18 @@ footer a:hover {
     display: none;
   }
 
-  .inventory-input {
-    grid-column: 1;
-    margin-left: 57px;
+  .inventory-stepper {
+    z-index: 1;
+    grid-row: 2;
+    grid-column: 1 / -1;
+    padding-right: 46px;
   }
 
   .resource-status {
     grid-column: 2;
     grid-row: 2;
+    z-index: 2;
+    justify-self: end;
   }
 
   .trajectory-body {
