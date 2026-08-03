@@ -45,6 +45,17 @@ test("ships accessible calculator controls in the initial response", async () =>
   assert.match(html, /aria-label="Material totals view"/);
   assert.match(html, />Combined<\/strong>/);
   assert.match(html, />By item<\/strong>/);
+  const itemPreview = html.match(/<div class="item-cost-preview">[\s\S]*?<\/div><\/article>/)?.[0] ?? "";
+  for (const icon of [
+    "exotic_components-icon.png",
+    "shd_calibration-icon.png",
+    "field_recon_data-icon.png",
+    "steel-icon.png",
+    "titanium-icon.png",
+    "receiver_components-icon.png",
+  ]) {
+    assert.match(itemPreview, new RegExp(icon));
+  }
   assert.doesNotMatch(html, /_vinext\/image/);
   assert.doesNotMatch(html, /Cost data notes/);
 });

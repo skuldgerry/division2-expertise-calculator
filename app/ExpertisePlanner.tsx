@@ -389,7 +389,7 @@ export function ExpertisePlanner() {
                   <div className="item-list">
                     {items.map((item, index) => {
                       const { cost } = itemCosts[index];
-                      const previewResources = RESOURCE_ORDER.filter((key) => cost[key]).slice(0, 3);
+                      const previewResources = RESOURCE_ORDER.filter((key) => cost[key]);
                       return (
                         <article className="item-card" key={item.id}>
                           <div className="item-card-topline">
