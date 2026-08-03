@@ -869,9 +869,117 @@ input[type="range"]::-moz-range-thumb {
   font-weight: 700;
 }
 
+.manifest-view-tabs {
+  display: grid;
+  margin: 18px 20px 0;
+  grid-template-columns: repeat(2, 1fr);
+  border: 1px solid var(--line-strong);
+  background: var(--field);
+}
+
+.manifest-view-tabs button {
+  display: flex;
+  min-height: 58px;
+  padding: 8px 14px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  border: 0;
+  border-right: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  text-align: left;
+}
+
+.manifest-view-tabs button:last-child {
+  border-right: 0;
+}
+
+.manifest-view-tabs button.active {
+  box-shadow: inset 0 -2px 0 var(--orange);
+  background: var(--orange-soft);
+  color: var(--text);
+}
+
+.manifest-view-tabs strong {
+  font-size: 12px;
+}
+
+.manifest-view-tabs small {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.item-material-selector {
+  display: flex;
+  margin: 10px 20px 0;
+  padding: 2px 2px 6px;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+.item-material-selector button {
+  display: grid;
+  min-width: 178px;
+  min-height: 58px;
+  padding: 8px 10px;
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  border: 1px solid var(--line);
+  background: var(--field);
+  color: var(--muted);
+  cursor: pointer;
+  text-align: left;
+}
+
+.item-material-selector button.active {
+  border-color: var(--orange);
+  background: var(--orange-soft);
+  color: var(--text);
+}
+
+.item-material-selector img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.item-material-selector span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.item-material-selector strong {
+  overflow: hidden;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-material-selector small {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+:root[data-theme="light"] .item-material-selector img {
+  filter: invert(1);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) .item-material-selector img {
+    filter: invert(1);
+  }
+}
+
 .manifest-summary {
   display: grid;
-  margin: 18px 20px 12px;
+  margin: 12px 20px;
   grid-template-columns: repeat(3, 1fr);
   border: 1px solid var(--line-strong);
 }
@@ -1392,9 +1500,15 @@ footer a:hover {
 
   .manifest-summary,
   .resource-list,
-  .resource-columns {
+  .resource-columns,
+  .manifest-view-tabs,
+  .item-material-selector {
     margin-right: 14px;
     margin-left: 14px;
+  }
+
+  .item-material-selector button {
+    min-width: 164px;
   }
 
   .resource-columns,

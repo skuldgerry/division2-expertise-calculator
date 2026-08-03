@@ -97,6 +97,8 @@ function NumberStepper({ label, value, min, max, onChange }: NumberStepperProps)
 export function ExpertisePlanner() {
   const [items, setItems] = useState<PlanItem[]>([defaultItem]);
   const [expandedResource, setExpandedResource] = useState<string | null>(null);
+  const [manifestView, setManifestView] = useState<"combined" | "item">("combined");
+  const [selectedItemId, setSelectedItemId] = useState(defaultItem.id);
   const [inventoryMode, setInventoryMode] = useState(false);
   const [inventory, setInventory] = useState<Record<string, number>>({});
   const [copyState, setCopyState] = useState("Copy summary");
@@ -165,7 +167,25 @@ export function ExpertisePlanner() {
     0,
   );
   const targetLevel = Math.max(...items.map((item) => item.target));
-  const visibleResources = RESOURCE_ORDER.filter((resource) => (totals[resource] || 0) > 0);
+  const selectedItemEntry =
+    itemCosts.find(({ item }) => item.id === selectedItemId) || itemCosts[0];
+  const selectedItemIndex = Math.max(
+    0,
+    items.findIndex((item) => item.id === selectedItemEntry.item.id),
+  );
+  const manifestTotals = manifestView === "combined" ? totals : selectedItemEntry.cost;
+  const visibleResources = RESOURCE_ORDER.filter(
+    (resource) => (manifestTotals[resource] || 0) > 0,
+  );
+  const manifestUnits =
+    manifestView === "combined"
+      ? items.reduce((sum, item) => sum + item.quantity, 0)
+      : selectedItemEntry.item.quantity;
+  const manifestLevels =
+    manifestView === "combined"
+      ? totalLevels
+      : (selectedItemEntry.item.target - selectedItemEntry.item.start) *
+        selectedItemEntry.item.quantity;
 
   const timeline = useMemo(() => {
     const rows = Array.from({ length: MAX_EXPERTISE_LEVEL }, (_, index) => ({
@@ -248,6 +268,8 @@ export function ExpertisePlanner() {
     setInventory({});
     setInventoryMode(false);
     setExpandedResource(null);
+    setManifestView("combined");
+    setSelectedItemId(defaultItem.id);
     setPlannerCollapsed(false);
   }
 
@@ -547,9 +569,59 @@ export function ExpertisePlanner() {
               </div>
             </div>
 
+            <div className="manifest-view-tabs" role="group" aria-label="Material totals view">
+              <button
+                type="button"
+                aria-pressed={manifestView === "combined"}
+                className={manifestView === "combined" ? "active" : ""}
+                onClick={() => {
+                  setManifestView("combined");
+                  setExpandedResource(null);
+                }}
+              >
+                <strong>Combined</strong>
+                <small>Whole plan</small>
+              </button>
+              <button
+                type="button"
+                aria-pressed={manifestView === "item"}
+                className={manifestView === "item" ? "active" : ""}
+                onClick={() => {
+                  setManifestView("item");
+                  setExpandedResource(null);
+                }}
+              >
+                <strong>By item</strong>
+                <small>Upgrade path</small>
+              </button>
+            </div>
+
+            {manifestView === "item" && (
+              <div className="item-material-selector" aria-label="Select an item to inspect">
+                {items.map((item, index) => (
+                  <button
+                    type="button"
+                    key={item.id}
+                    aria-pressed={selectedItemEntry.item.id === item.id}
+                    className={selectedItemEntry.item.id === item.id ? "active" : ""}
+                    onClick={() => {
+                      setSelectedItemId(item.id);
+                      setExpandedResource(null);
+                    }}
+                  >
+                    <img src={CATEGORIES[item.category].icon} alt="" width="24" height="24" />
+                    <span>
+                      <strong>{itemLabel(item, index)}</strong>
+                      <small>{item.start} → {item.target} · Qty {item.quantity}</small>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div className="manifest-summary" aria-live="polite">
-              <div><span>Units</span><strong>{items.reduce((sum, item) => sum + item.quantity, 0)}</strong></div>
-              <div><span>Levels</span><strong>{totalLevels}</strong></div>
+              <div><span>{manifestView === "combined" ? "Units" : "Quantity"}</span><strong>{manifestUnits}</strong></div>
+              <div><span>Levels</span><strong>{manifestLevels}</strong></div>
               <div><span>Resources</span><strong>{visibleResources.length}</strong></div>
             </div>
 
@@ -563,10 +635,12 @@ export function ExpertisePlanner() {
             <div className="resource-list">
               {visibleResources.map((resource) => {
                 const meta = RESOURCES[resource as keyof typeof RESOURCES];
-                const total = totals[resource] || 0;
+                const total = manifestTotals[resource] || 0;
                 const owned = inventory[resource] || 0;
                 const covered = owned >= total;
                 const open = expandedResource === resource;
+                const contributingItems =
+                  manifestView === "combined" ? itemCosts : [selectedItemEntry];
                 return (
                   <article className={`resource-card ${open ? "expanded" : ""}`} key={resource}>
                     <div className="resource-main">
@@ -605,7 +679,7 @@ export function ExpertisePlanner() {
 
                     {open && (
                       <div className="resource-breakdown">
-                        {itemCosts.filter(({ cost }) => cost[resource]).map(({ item, cost }) => {
+                        {contributingItems.filter(({ cost }) => cost[resource]).map(({ item, cost }) => {
                           const index = items.findIndex((entry) => entry.id === item.id);
                           return (
                             <div key={item.id}>
@@ -622,7 +696,9 @@ export function ExpertisePlanner() {
             </div>
 
             <p className="manifest-note">
-              Numbers are per item unless noted. Turn on inventory check to compare what you own with the plan.
+              {manifestView === "combined"
+                ? "Combined totals include every item and quantity in the plan. Switch to By item to compare individual upgrade paths."
+                : `Showing the complete material cost for ${itemLabel(selectedItemEntry.item, selectedItemIndex)}. Inventory values are compared with this item only.`}
             </p>
           </aside>
         </div>

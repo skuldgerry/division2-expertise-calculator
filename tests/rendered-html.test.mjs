@@ -42,6 +42,9 @@ test("ships accessible calculator controls in the initial response", async () =>
   assert.match(html, /aria-label="Decrease Current level for Weapon 1"/);
   assert.match(html, /aria-label="Increase Target level for Weapon 1"/);
   assert.match(html, /aria-label="Increase Quantity for item 1"/);
+  assert.match(html, /aria-label="Material totals view"/);
+  assert.match(html, />Combined<\/strong>/);
+  assert.match(html, />By item<\/strong>/);
   assert.doesNotMatch(html, /_vinext\/image/);
   assert.doesNotMatch(html, /Cost data notes/);
 });
