@@ -1,7 +1,8 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import {
   CATEGORIES,
   COST_DATA_DATE,
@@ -195,7 +196,7 @@ export function ExpertisePlanner() {
 
   async function copySummary() {
     const lines = [
-      "SHD Quartermaster — Expertise upgrade plan",
+      "SHD Quartermaster — Expertise calculator",
       ...items.map(
         (item, index) =>
           `${item.quantity}× ${itemLabel(item, index)} · ${item.start} → ${item.target}`,
@@ -224,7 +225,7 @@ export function ExpertisePlanner() {
           <span className="shd-mark" aria-hidden="true"><span /></span>
           <span>
             <strong>SHD Quartermaster</strong>
-            <small>Expertise planner</small>
+            <small>Expertise calculator</small>
           </span>
         </a>
         <div className="command-actions">
@@ -244,10 +245,10 @@ export function ExpertisePlanner() {
         <section className="hero" aria-labelledby="page-title">
           <div>
             <p className="eyebrow"><span>ISAC</span> Requisition planning online</p>
-            <h1 id="page-title">Plan upgrades.<br /><em>Spend smarter.</em></h1>
+            <h1 id="page-title">Expertise<br /><em>Calculator</em></h1>
             <p className="hero-copy">
-              Build an Expertise 0–30 upgrade manifest for weapons, gear, and skills.
-              Costs update live as your plan changes.
+              Calculate the exact materials needed to upgrade weapons, gear, and skills
+              from Expertise 0 to 30.
             </p>
           </div>
           <div className="hero-readout" aria-label="Current plan summary">
@@ -284,7 +285,7 @@ export function ExpertisePlanner() {
                             onClick={() => updateItem(item.id, { category })}
                             key={category}
                           >
-                            <Image src={CATEGORIES[category].icon} alt="" width={26} height={26} />
+                            <img src={CATEGORIES[category].icon} alt="" width="26" height="26" />
                             {CATEGORIES[category].label}
                           </button>
                         ))}
@@ -372,7 +373,7 @@ export function ExpertisePlanner() {
                       <div>
                         {previewResources.length ? previewResources.map((resource) => (
                           <span key={resource} title={RESOURCES[resource as keyof typeof RESOURCES].label}>
-                            <Image src={RESOURCES[resource as keyof typeof RESOURCES].icon} alt="" width={22} height={22} />
+                            <img src={RESOURCES[resource as keyof typeof RESOURCES].icon} alt="" width="22" height="22" />
                             {formatNumber(cost[resource])}
                           </span>
                         )) : <span>No materials required</span>}
@@ -396,15 +397,21 @@ export function ExpertisePlanner() {
                   <p className="section-index">02 / Resource manifest</p>
                   <h2 id="manifest-heading">Requisition</h2>
                 </div>
-                <button
-                  type="button"
-                  className={`inventory-toggle ${inventoryMode ? "active" : ""}`}
-                  aria-pressed={inventoryMode}
-                  onClick={() => setInventoryMode((value) => !value)}
-                >
-                  <span aria-hidden="true" /> Inventory
-                </button>
               </div>
+
+              <button
+                type="button"
+                className={`inventory-toggle ${inventoryMode ? "active" : ""}`}
+                aria-pressed={inventoryMode}
+                onClick={() => setInventoryMode((value) => !value)}
+              >
+                <span aria-hidden="true" />
+                <span className="inventory-toggle-copy">
+                  <strong>Inventory check</strong>
+                  <small>Compare what you own against the plan</small>
+                </span>
+                <b>{inventoryMode ? "On" : "Off"}</b>
+              </button>
 
               <div className="manifest-summary" aria-live="polite">
                 <div><span>Units</span><strong>{totalUnits}</strong></div>
@@ -443,7 +450,7 @@ export function ExpertisePlanner() {
                         onClick={() => setExpandedResource(open ? null : resource)}
                       >
                         <span className="resource-icon-wrap" style={{ "--resource-color": meta.color } as React.CSSProperties}>
-                          <Image src={meta.icon} alt="" width={34} height={34} />
+                          <img src={meta.icon} alt="" width="34" height="34" />
                         </span>
                         <span className="resource-name"><strong>{meta.label}</strong><small>{meta.group === "advanced" ? "Advanced material" : "Crafting material"}</small></span>
                         <span className="resource-total">
@@ -526,11 +533,6 @@ export function ExpertisePlanner() {
           </div>
         </section>
 
-        <section className="intel-notes" aria-label="Cost data notes">
-          <div><span>45</span><p><strong>Exotic Components</strong> take one item from Expertise 0 to 30 across every category.</p></div>
-          <div><span>−50%</span><p><strong>Exotic costs</strong> were halved for Y8S1; weapon and gear ordinary materials fell 20%.</p></div>
-          <div><span>30</span><p><strong>Maximum Expertise</strong> is confirmed by Ubisoft and is required for Prototype conversion.</p></div>
-        </section>
       </main>
 
       <footer>

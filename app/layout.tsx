@@ -31,7 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(origin),
     title: {
-      default: "SHD Quartermaster — Division 2 Expertise Planner",
+      default: "SHD Quartermaster — Division 2 Expertise Calculator",
       template: "%s · SHD Quartermaster",
     },
     description:
@@ -49,12 +49,12 @@ export async function generateMetadata(): Promise<Metadata> {
       title: "SHD Quartermaster",
       description: "Plan every Expertise upgrade from 0 to 30 before spending a single component.",
       siteName: "SHD Quartermaster",
-      images: [{ url: socialImage, width: 1734, height: 907, alt: "SHD Quartermaster — Division 2 Expertise Planner" }],
+      images: [{ url: socialImage, width: 1734, height: 907, alt: "SHD Quartermaster — Division 2 Expertise Calculator" }],
     },
     twitter: {
       card: "summary_large_image",
       title: "SHD Quartermaster",
-      description: "Division 2 Expertise planning, rebuilt for level 30.",
+      description: "Division 2 Expertise calculation, rebuilt for level 30.",
       images: [socialImage],
     },
   };

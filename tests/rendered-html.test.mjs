@@ -13,14 +13,15 @@ async function render() {
   );
 }
 
-test("server-renders the finished Expertise planner", async () => {
+test("server-renders the finished Expertise calculator", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>SHD Quartermaster — Division 2 Expertise Planner<\/title>/i);
-  assert.match(html, /Plan upgrades/);
+  assert.match(html, /<title>SHD Quartermaster — Division 2 Expertise Calculator<\/title>/i);
+  assert.match(html, /Expertise/);
+  assert.match(html, /Calculator/);
   assert.match(html, /Resource manifest/);
   assert.match(html, /Upgrade intelligence/);
   assert.match(html, /Y8S1 \(Rev\. 2\)/);
@@ -34,5 +35,7 @@ test("ships accessible calculator controls in the initial response", async () =>
   assert.match(html, /type="range"/);
   assert.match(html, /aria-live="polite"/);
   assert.match(html, /aria-pressed="false"/);
-  assert.match(html, /Maximum Expertise/);
+  assert.match(html, /Inventory check/);
+  assert.doesNotMatch(html, /_vinext\/image/);
+  assert.doesNotMatch(html, /Cost data notes/);
 });

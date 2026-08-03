@@ -1,10 +1,23 @@
 import assert from "node:assert/strict";
+import { access } from "node:fs/promises";
 import test from "node:test";
 import {
+  CATEGORIES,
   MAX_EXPERTISE_LEVEL,
+  RESOURCES,
   calculateUpgradeCost,
   combineCosts,
 } from "../app/expertise-data.js";
+
+test("every configured category and resource icon exists in public assets", async () => {
+  const icons = [
+    ...Object.values(CATEGORIES).map(({ icon }) => icon),
+    ...Object.values(RESOURCES).map(({ icon }) => icon),
+  ];
+  await Promise.all(
+    icons.map((icon) => access(new URL(`../public${icon}`, import.meta.url))),
+  );
+});
 
 test("uses Expertise level 30 as the single cap", () => {
   assert.equal(MAX_EXPERTISE_LEVEL, 30);
