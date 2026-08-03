@@ -19,6 +19,7 @@ import {
 } from "./expertise-data";
 
 type Category = keyof typeof CATEGORIES;
+type Theme = "system" | "light" | "dark";
 type PlanItem = {
   id: string;
   category: Category;
@@ -29,7 +30,8 @@ type PlanItem = {
 };
 type Totals = Record<string, number>;
 
-const STORAGE_KEY = "shd-quartermaster-plan-v2";
+const STORAGE_KEY = "expertise-calculator-plan-v3";
+const THEME_KEY = "expertise-calculator-theme";
 const CHECKPOINTS = [10, 15, 20, 25, 30];
 
 const defaultItem: PlanItem = {
@@ -51,11 +53,12 @@ function itemLabel(item: PlanItem, index: number) {
 
 export function ExpertisePlanner() {
   const [items, setItems] = useState<PlanItem[]>([defaultItem]);
-  const [filter, setFilter] = useState<"all" | "advanced" | "common">("all");
   const [expandedResource, setExpandedResource] = useState<string | null>(null);
   const [inventoryMode, setInventoryMode] = useState(false);
   const [inventory, setInventory] = useState<Record<string, number>>({});
   const [copyState, setCopyState] = useState("Copy summary");
+  const [theme, setTheme] = useState<Theme>("system");
+  const [plannerCollapsed, setPlannerCollapsed] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const nextId = useRef(2);
 
@@ -71,8 +74,11 @@ export function ExpertisePlanner() {
           }
           if (typeof parsed.inventoryMode === "boolean") setInventoryMode(parsed.inventoryMode);
         }
+
+        const savedTheme = window.localStorage.getItem(THEME_KEY);
+        if (savedTheme === "light" || savedTheme === "dark") setTheme(savedTheme);
       } catch {
-        // A private browsing policy can disable storage; the planner still works in memory.
+        // Storage can be unavailable in private browsing; the calculator still works in memory.
       }
       setHydrated(true);
     }, 0);
@@ -87,9 +93,16 @@ export function ExpertisePlanner() {
         JSON.stringify({ items, inventory, inventoryMode }),
       );
     } catch {
-      // Local persistence is an enhancement, not a requirement.
+      // Local persistence is optional.
     }
   }, [hydrated, inventory, inventoryMode, items]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    const root = document.documentElement;
+    if (theme === "system") root.removeAttribute("data-theme");
+    else root.setAttribute("data-theme", theme);
+  }, [hydrated, theme]);
 
   const itemCosts = useMemo(
     () =>
@@ -108,12 +121,8 @@ export function ExpertisePlanner() {
     (sum, item) => sum + (item.target - item.start) * item.quantity,
     0,
   );
-  const totalUnits = items.reduce((sum, item) => sum + item.quantity, 0);
-
-  const visibleResources = RESOURCE_ORDER.filter((resource) => {
-    const meta = RESOURCES[resource as keyof typeof RESOURCES];
-    return (totals[resource] || 0) > 0 && (filter === "all" || meta.group === filter);
-  });
+  const targetLevel = Math.max(...items.map((item) => item.target));
+  const visibleResources = RESOURCE_ORDER.filter((resource) => (totals[resource] || 0) > 0);
 
   const timeline = useMemo(() => {
     const rows = Array.from({ length: MAX_EXPERTISE_LEVEL }, (_, index) => ({
@@ -144,7 +153,6 @@ export function ExpertisePlanner() {
   }, [items]);
 
   const maxTimelineScore = Math.max(1, ...timeline.map((row) => row.score));
-
   const checkpointTotals = useMemo(
     () =>
       CHECKPOINTS.map((checkpoint) => {
@@ -168,10 +176,15 @@ export function ExpertisePlanner() {
   }
 
   function addItem(source?: PlanItem) {
+    setPlannerCollapsed(false);
     setItems((current) => {
       if (current.length >= 12) return current;
       const item: PlanItem = source
-        ? { ...source, id: `item-${Date.now()}-${nextId.current++}`, name: `${source.name} copy`.trim() }
+        ? {
+            ...source,
+            id: `item-${Date.now()}-${nextId.current++}`,
+            name: source.name ? `${source.name} copy` : "",
+          }
         : {
             ...defaultItem,
             id: `item-${Date.now()}-${nextId.current++}`,
@@ -183,23 +196,42 @@ export function ExpertisePlanner() {
 
   function removeItem(id: string) {
     setItems((current) =>
-      current.length === 1 ? [defaultItem] : current.filter((item) => item.id !== id),
+      current.length === 1 ? [{ ...defaultItem }] : current.filter((item) => item.id !== id),
     );
   }
 
   function resetPlan() {
-    setItems([defaultItem]);
+    setItems([{ ...defaultItem }]);
     setInventory({});
     setInventoryMode(false);
     setExpandedResource(null);
+    setPlannerCollapsed(false);
+  }
+
+  function chooseTheme(nextTheme: Theme) {
+    setTheme(nextTheme);
+    if (nextTheme === "system") {
+      try {
+        window.localStorage.removeItem(THEME_KEY);
+      } catch {
+        // Theme still applies for this session.
+      }
+      return;
+    }
+
+    try {
+      window.localStorage.setItem(THEME_KEY, nextTheme);
+    } catch {
+      // Theme still applies for this session.
+    }
   }
 
   async function copySummary() {
     const lines = [
-      "SHD Quartermaster — Expertise calculator",
+      "Expertise Calculator — The Division 2",
       ...items.map(
         (item, index) =>
-          `${item.quantity}× ${itemLabel(item, index)} · ${item.start} → ${item.target}`,
+          `${item.quantity}x ${itemLabel(item, index)} · ${item.start} → ${item.target}`,
       ),
       "",
       ...RESOURCE_ORDER.filter((resource) => totals[resource]).map(
@@ -221,14 +253,24 @@ export function ExpertisePlanner() {
   return (
     <div className="app-shell">
       <header className="command-bar">
-        <a className="brand" href="#top" aria-label="SHD Quartermaster home">
-          <span className="shd-mark" aria-hidden="true"><span /></span>
-          <span>
-            <strong>SHD Quartermaster</strong>
-            <small>Expertise calculator</small>
-          </span>
+        <a className="brand" href="#top" aria-label="Expertise Calculator home">
+          Expertise Calculator
         </a>
+
         <div className="command-actions">
+          <div className="theme-switcher" role="group" aria-label="Color theme">
+            {(["system", "light", "dark"] as Theme[]).map((value) => (
+              <button
+                type="button"
+                key={value}
+                aria-pressed={theme === value}
+                className={theme === value ? "active" : ""}
+                onClick={() => chooseTheme(value)}
+              >
+                {value[0].toUpperCase() + value.slice(1)}
+              </button>
+            ))}
+          </div>
           <span className="data-status" title="Current Expertise upgrade cost dataset">
             <i aria-hidden="true" /> {COST_DATA_VERSION}
           </span>
@@ -242,307 +284,312 @@ export function ExpertisePlanner() {
       </header>
 
       <main id="top">
-        <section className="hero" aria-labelledby="page-title">
-          <div>
-            <p className="eyebrow"><span>ISAC</span> Requisition planning online</p>
-            <h1 id="page-title">Expertise<br /><em>Calculator</em></h1>
-            <p className="hero-copy">
-              Calculate the exact materials needed to upgrade weapons, gear, and skills
-              from Expertise 0 to 30.
-            </p>
-          </div>
-          <div className="hero-readout" aria-label="Current plan summary">
-            <div><span>Items</span><strong>{totalUnits}</strong></div>
-            <div><span>Levels</span><strong>{totalLevels}</strong></div>
-            <div><span>Cap</span><strong>30</strong></div>
+        <section className="summary-strip" aria-label="Calculator summary">
+          <p>
+            Calculate the materials and resources required to upgrade your weapons, gear,
+            and skills.
+          </p>
+          <div className="summary-readout" aria-live="polite">
+            <div><span>Items</span><strong>{items.length}</strong></div>
+            <div><span>Target level</span><strong>{targetLevel}</strong></div>
+            <div><span>Max level</span><strong>{MAX_EXPERTISE_LEVEL}</strong></div>
           </div>
         </section>
 
-        <div className="workspace-grid">
-          <section className="planner-panel" aria-labelledby="plan-heading">
-            <div className="section-heading">
-              <div>
-                <p className="section-index">01 / Upgrade plan</p>
-                <h2 id="plan-heading">Your loadout</h2>
-              </div>
-              <span className="section-note">Up to 12 entries</span>
-            </div>
-
-            <div className="item-list">
-              {items.map((item, index) => {
-                const { cost } = itemCosts[index];
-                const previewResources = RESOURCE_ORDER.filter((key) => cost[key]).slice(0, 3);
-                return (
-                  <article className="item-card" key={item.id}>
-                    <div className="item-card-topline">
-                      <span className="item-number">{String(index + 1).padStart(2, "0")}</span>
-                      <div className="category-tabs" role="group" aria-label={`Category for item ${index + 1}`}>
-                        {(Object.keys(CATEGORIES) as Category[]).map((category) => (
-                          <button
-                            type="button"
-                            className={item.category === category ? "active" : ""}
-                            aria-pressed={item.category === category}
-                            onClick={() => updateItem(item.id, { category })}
-                            key={category}
-                          >
-                            <img src={CATEGORIES[category].icon} alt="" width="26" height="26" />
-                            {CATEGORIES[category].label}
-                          </button>
-                        ))}
-                      </div>
-                      <div className="item-actions">
-                        <button type="button" onClick={() => addItem(item)} aria-label={`Duplicate ${itemLabel(item, index)}`} title="Duplicate item">⧉</button>
-                        <button type="button" onClick={() => removeItem(item.id)} aria-label={`Remove ${itemLabel(item, index)}`} title="Remove item">×</button>
-                      </div>
-                    </div>
-
-                    <div className="item-fields">
-                      <label className="name-field">
-                        <span>Item name <small>optional</small></span>
-                        <input
-                          type="text"
-                          value={item.name}
-                          onChange={(event) => updateItem(item.id, { name: event.target.value.slice(0, 60) })}
-                          placeholder={item.category === "weapon" ? "e.g. St. Elmo's Engine" : item.category === "gear" ? "e.g. Striker's Kneepads" : "e.g. Assault Turret"}
-                        />
-                      </label>
-                      <label className="quantity-field">
-                        <span>Qty</span>
-                        <input
-                          type="number"
-                          min="1"
-                          max="12"
-                          value={item.quantity}
-                          onChange={(event) => updateItem(item.id, { quantity: clamp(Number(event.target.value), 1, 12) })}
-                        />
-                      </label>
-                    </div>
-
-                    <div className="level-editor">
-                      <div className="level-values">
-                        <label>
-                          <span>Current</span>
-                          <input
-                            type="number"
-                            min="0"
-                            max={item.target}
-                            value={item.start}
-                            onChange={(event) => updateItem(item.id, { start: clamp(Number(event.target.value), 0, item.target) })}
-                          />
-                        </label>
-                        <span className="level-arrow" aria-hidden="true">→</span>
-                        <label>
-                          <span>Target</span>
-                          <input
-                            type="number"
-                            min={item.start}
-                            max={MAX_EXPERTISE_LEVEL}
-                            value={item.target}
-                            onChange={(event) => updateItem(item.id, { target: clamp(Number(event.target.value), item.start, MAX_EXPERTISE_LEVEL) })}
-                          />
-                        </label>
-                      </div>
-                      <label className="range-label">
-                        <span className="sr-only">Target Expertise level for {itemLabel(item, index)}</span>
-                        <input
-                          type="range"
-                          min={item.start}
-                          max={MAX_EXPERTISE_LEVEL}
-                          value={item.target}
-                          style={{ "--range-progress": `${((item.target - item.start) / Math.max(1, MAX_EXPERTISE_LEVEL - item.start)) * 100}%` } as React.CSSProperties}
-                          onChange={(event) => updateItem(item.id, { target: Number(event.target.value) })}
-                        />
-                      </label>
-                      <div className="quick-targets" aria-label="Quick target levels">
-                        {CHECKPOINTS.map((level) => (
-                          <button
-                            type="button"
-                            key={level}
-                            disabled={level < item.start}
-                            className={item.target === level ? "active" : ""}
-                            onClick={() => updateItem(item.id, { target: level })}
-                          >
-                            {level}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="item-cost-preview">
-                      <span>{(item.target - item.start) * item.quantity} levels queued</span>
-                      <div>
-                        {previewResources.length ? previewResources.map((resource) => (
-                          <span key={resource} title={RESOURCES[resource as keyof typeof RESOURCES].label}>
-                            <img src={RESOURCES[resource as keyof typeof RESOURCES].icon} alt="" width="22" height="22" />
-                            {formatNumber(cost[resource])}
-                          </span>
-                        )) : <span>No materials required</span>}
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-
-            <button className="add-item" type="button" onClick={() => addItem()} disabled={items.length >= 12}>
-              <span aria-hidden="true">＋</span>
-              <span><strong>Add another item</strong><small>Weapon, gear, or skill</small></span>
-            </button>
-          </section>
-
-          <aside className="manifest-panel" aria-labelledby="manifest-heading">
-            <div className="manifest-sticky">
-              <div className="section-heading manifest-heading">
-                <div>
-                  <p className="section-index">02 / Resource manifest</p>
-                  <h2 id="manifest-heading">Requisition</h2>
+        <div className="dashboard-grid">
+          <div className="left-stack">
+            <section className="panel planner-panel" aria-labelledby="plan-heading">
+              <div className="panel-heading">
+                <h1 id="plan-heading">
+                  1. Your loadout <span>({items.length} {items.length === 1 ? "item" : "items"})</span>
+                </h1>
+                <div className="panel-heading-actions">
+                  <button className="compact-action" type="button" onClick={() => addItem()} disabled={items.length >= 12}>
+                    <span aria-hidden="true">+</span> Add item
+                  </button>
+                  <button
+                    className="collapse-button"
+                    type="button"
+                    aria-expanded={!plannerCollapsed}
+                    aria-label={plannerCollapsed ? "Expand loadout" : "Collapse loadout"}
+                    onClick={() => setPlannerCollapsed((value) => !value)}
+                  >
+                    <span aria-hidden="true">⌃</span>
+                  </button>
                 </div>
               </div>
 
-              <button
-                type="button"
-                className={`inventory-toggle ${inventoryMode ? "active" : ""}`}
-                aria-pressed={inventoryMode}
-                onClick={() => setInventoryMode((value) => !value)}
-              >
-                <span aria-hidden="true" />
-                <span className="inventory-toggle-copy">
-                  <strong>Inventory check</strong>
-                  <small>Compare what you own against the plan</small>
-                </span>
-                <b>{inventoryMode ? "On" : "Off"}</b>
-              </button>
+              {!plannerCollapsed && (
+                <div className="planner-body">
+                  <div className="item-list">
+                    {items.map((item, index) => {
+                      const { cost } = itemCosts[index];
+                      const previewResources = RESOURCE_ORDER.filter((key) => cost[key]).slice(0, 3);
+                      return (
+                        <article className="item-card" key={item.id}>
+                          <div className="item-card-topline">
+                            <span className="item-number">{index + 1}</span>
+                            <div className="category-tabs" role="group" aria-label={`Category for item ${index + 1}`}>
+                              {(Object.keys(CATEGORIES) as Category[]).map((category) => (
+                                <button
+                                  type="button"
+                                  className={item.category === category ? "active" : ""}
+                                  aria-pressed={item.category === category}
+                                  onClick={() => updateItem(item.id, { category })}
+                                  key={category}
+                                >
+                                  <img src={CATEGORIES[category].icon} alt="" width="28" height="28" />
+                                  {CATEGORIES[category].label}
+                                </button>
+                              ))}
+                            </div>
+                            <div className="item-actions">
+                              <button type="button" onClick={() => addItem(item)} aria-label={`Duplicate ${itemLabel(item, index)}`} title="Duplicate item">
+                                <span className="duplicate-icon" aria-hidden="true" />
+                              </button>
+                              <button type="button" onClick={() => removeItem(item.id)} aria-label={`Remove ${itemLabel(item, index)}`} title="Remove item">
+                                <img src="/resources/remove-icon.png" alt="" width="20" height="20" />
+                              </button>
+                            </div>
+                          </div>
 
-              <div className="manifest-summary" aria-live="polite">
-                <div><span>Units</span><strong>{totalUnits}</strong></div>
-                <div><span>Levels purchased</span><strong>{totalLevels}</strong></div>
-                <div><span>Resources</span><strong>{RESOURCE_ORDER.filter((key) => totals[key]).length}</strong></div>
+                          <div className="item-fields">
+                            <label className="name-field">
+                              <span>Item name <small>(optional)</small></span>
+                              <input
+                                type="text"
+                                value={item.name}
+                                onChange={(event) => updateItem(item.id, { name: event.target.value.slice(0, 60) })}
+                                placeholder={item.category === "weapon" ? "e.g. St. Elmo's Engine" : item.category === "gear" ? "e.g. Striker's Kneepads" : "e.g. Assault Turret"}
+                              />
+                            </label>
+                            <label className="quantity-field">
+                              <span>Quantity</span>
+                              <input
+                                type="number"
+                                min="1"
+                                max="12"
+                                value={item.quantity}
+                                onChange={(event) => updateItem(item.id, { quantity: clamp(Number(event.target.value), 1, 12) })}
+                              />
+                            </label>
+                          </div>
+
+                          <div className="level-editor">
+                            <div className="level-values">
+                              <label>
+                                <span>Current level</span>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max={item.target}
+                                  value={item.start}
+                                  onChange={(event) => updateItem(item.id, { start: clamp(Number(event.target.value), 0, item.target) })}
+                                />
+                              </label>
+                              <span className="level-arrow" aria-hidden="true">→</span>
+                              <label>
+                                <span>Target level</span>
+                                <input
+                                  type="number"
+                                  min={item.start}
+                                  max={MAX_EXPERTISE_LEVEL}
+                                  value={item.target}
+                                  onChange={(event) => updateItem(item.id, { target: clamp(Number(event.target.value), item.start, MAX_EXPERTISE_LEVEL) })}
+                                />
+                              </label>
+                            </div>
+                            <label className="range-label">
+                              <span className="sr-only">Target Expertise level for {itemLabel(item, index)}</span>
+                              <input
+                                type="range"
+                                min={item.start}
+                                max={MAX_EXPERTISE_LEVEL}
+                                value={item.target}
+                                style={{ "--range-progress": `${((item.target - item.start) / Math.max(1, MAX_EXPERTISE_LEVEL - item.start)) * 100}%` } as React.CSSProperties}
+                                onChange={(event) => updateItem(item.id, { target: Number(event.target.value) })}
+                              />
+                            </label>
+                            <div className="quick-targets" aria-label="Quick target levels">
+                              {CHECKPOINTS.map((level) => (
+                                <button
+                                  type="button"
+                                  key={level}
+                                  disabled={level < item.start}
+                                  className={item.target === level ? "active" : ""}
+                                  onClick={() => updateItem(item.id, { target: level })}
+                                >
+                                  {level}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="item-cost-preview">
+                            <span>{(item.target - item.start) * item.quantity} levels queued</span>
+                            <div>
+                              {previewResources.length ? previewResources.map((resource) => (
+                                <span key={resource} title={RESOURCES[resource as keyof typeof RESOURCES].label}>
+                                  <img src={RESOURCES[resource as keyof typeof RESOURCES].icon} alt="" width="26" height="26" />
+                                  {formatNumber(cost[resource])}
+                                </span>
+                              )) : <span>No materials required</span>}
+                            </div>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+
+                  <button className="add-item" type="button" onClick={() => addItem()} disabled={items.length >= 12}>
+                    <span aria-hidden="true">+</span>
+                    <span><strong>Add item</strong><small>Weapon, gear, or skill</small></span>
+                  </button>
+                </div>
+              )}
+            </section>
+
+            <section className="panel intelligence" aria-labelledby="intelligence-heading">
+              <div className="panel-heading">
+                <h2 id="intelligence-heading">2. Cost trajectory</h2>
+                <span>Planned levels highlighted</span>
               </div>
 
-              <div className="filter-tabs" role="tablist" aria-label="Resource groups">
-                {(["all", "advanced", "common"] as const).map((value) => (
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={filter === value}
-                    className={filter === value ? "active" : ""}
-                    onClick={() => setFilter(value)}
-                    key={value}
-                  >
-                    {value === "all" ? "All" : value === "advanced" ? "Advanced" : "Common"}
-                  </button>
+              <div className="trajectory-body">
+                <div className="trajectory-copy">
+                  <strong>Advanced<br />material pressure</strong>
+                  <p>Field Recon, SHD Calibration, and Exotic Components scale sharply after Expertise 12.</p>
+                </div>
+                <div className="timeline" role="img" aria-label="Advanced material pressure across Expertise levels 1 through 30">
+                  {timeline.map((row) => (
+                    <div className={`timeline-cell ${row.active ? "active" : ""}`} key={row.level} title={`Level ${row.level}: ${row.exotic} Exotic, ${row.shd} SHD, ${row.recon} Recon`}>
+                      <span style={{ height: `${Math.max(row.active ? 8 : 3, (row.score / maxTimelineScore) * 100)}%` }} />
+                      <small>{row.level % 5 === 0 || row.level === 1 ? row.level : ""}</small>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="checkpoint-grid" aria-label="Upgrade cost checkpoints">
+                {checkpointTotals.map(({ checkpoint, totals: checkpointCost }) => (
+                  <article className={checkpoint === targetLevel ? "featured" : ""} key={checkpoint}>
+                    <div><strong>{checkpoint}</strong><span>Target</span></div>
+                    <dl>
+                      <div><dt>Exotics</dt><dd>{formatNumber(checkpointCost.exotic_components)}</dd></div>
+                      <div><dt>SHD</dt><dd>{formatNumber(checkpointCost.shd_calibration)}</dd></div>
+                      <div><dt>Recon</dt><dd>{formatNumber(checkpointCost.field_recon_data)}</dd></div>
+                    </dl>
+                  </article>
                 ))}
               </div>
+            </section>
+          </div>
 
-              <div className="resource-list">
-                {visibleResources.map((resource) => {
-                  const meta = RESOURCES[resource as keyof typeof RESOURCES];
-                  const total = totals[resource] || 0;
-                  const owned = inventory[resource] || 0;
-                  const remaining = Math.max(0, total - owned);
-                  const open = expandedResource === resource;
-                  return (
-                    <article className={`resource-card ${open ? "expanded" : ""}`} key={resource}>
+          <aside className={`panel manifest-panel ${inventoryMode ? "inventory-active" : ""}`} aria-labelledby="manifest-heading">
+            <div className="panel-heading manifest-heading">
+              <h2 id="manifest-heading">Materials required</h2>
+              <div className="inventory-control">
+                <button
+                  type="button"
+                  className="inventory-switch"
+                  role="switch"
+                  aria-checked={inventoryMode}
+                  aria-label="Inventory check"
+                  onClick={() => setInventoryMode((value) => !value)}
+                >
+                  <span aria-hidden="true" />
+                </button>
+                <span>Inventory check</span>
+                <span className="info-button" title="Compare required materials with the amounts you own" aria-label="Inventory check information">i</span>
+              </div>
+            </div>
+
+            <div className="manifest-summary" aria-live="polite">
+              <div><span>Units</span><strong>{items.reduce((sum, item) => sum + item.quantity, 0)}</strong></div>
+              <div><span>Levels</span><strong>{totalLevels}</strong></div>
+              <div><span>Resources</span><strong>{visibleResources.length}</strong></div>
+            </div>
+
+            <div className="resource-columns" aria-hidden="true">
+              <span>Material</span>
+              <span>Required</span>
+              {inventoryMode && <span>Inventory</span>}
+              {inventoryMode && <span>Status</span>}
+            </div>
+
+            <div className="resource-list">
+              {visibleResources.map((resource) => {
+                const meta = RESOURCES[resource as keyof typeof RESOURCES];
+                const total = totals[resource] || 0;
+                const owned = inventory[resource] || 0;
+                const covered = owned >= total;
+                const open = expandedResource === resource;
+                return (
+                  <article className={`resource-card ${open ? "expanded" : ""}`} key={resource}>
+                    <div className="resource-main">
                       <button
-                        className="resource-main"
+                        className="resource-identity"
                         type="button"
                         aria-expanded={open}
                         onClick={() => setExpandedResource(open ? null : resource)}
                       >
                         <span className="resource-icon-wrap" style={{ "--resource-color": meta.color } as React.CSSProperties}>
-                          <img src={meta.icon} alt="" width="34" height="34" />
+                          <img src={meta.icon} alt="" width="38" height="38" />
                         </span>
-                        <span className="resource-name"><strong>{meta.label}</strong><small>{meta.group === "advanced" ? "Advanced material" : "Crafting material"}</small></span>
-                        <span className="resource-total">
-                          <strong>{formatNumber(inventoryMode ? remaining : total)}</strong>
-                          <small>{inventoryMode ? "remaining" : "required"}</small>
+                        <span className="resource-name">
+                          <strong>{meta.label}</strong>
+                          <small>{meta.group === "advanced" ? "Advanced material" : "Crafting material"}</small>
                         </span>
-                        <span className="chevron" aria-hidden="true">⌄</span>
                       </button>
+                      <strong className="required-value">{formatNumber(total)}</strong>
                       {inventoryMode && (
-                        <label className="inventory-row">
-                          <span>In your inventory</span>
-                          <input
-                            type="number"
-                            min="0"
-                            value={owned}
-                            onClick={(event) => event.stopPropagation()}
-                            onChange={(event) => setInventory((current) => ({ ...current, [resource]: Math.max(0, Number(event.target.value) || 0) }))}
-                          />
-                          <span className={owned >= total ? "covered" : "shortfall"}>
-                            {owned >= total ? "Covered" : `${formatNumber(remaining)} short`}
-                          </span>
-                        </label>
+                        <input
+                          className="inventory-input"
+                          type="number"
+                          min="0"
+                          value={owned}
+                          aria-label={`${meta.label} in inventory`}
+                          onChange={(event) => setInventory((current) => ({ ...current, [resource]: Math.max(0, Number(event.target.value) || 0) }))}
+                        />
                       )}
-                      {open && (
-                        <div className="resource-breakdown">
-                          {itemCosts.filter(({ cost }) => cost[resource]).map(({ item, cost }) => {
-                            const index = items.findIndex((entry) => entry.id === item.id);
-                            return (
-                              <div key={item.id}>
-                                <span>{itemLabel(item, index)}</span>
-                                <strong>{formatNumber(cost[resource])}</strong>
-                              </div>
-                            );
-                          })}
-                        </div>
+                      {inventoryMode && (
+                        <span className={`resource-status ${covered ? "covered" : "shortfall"}`} title={covered ? "Covered" : `${formatNumber(total - owned)} short`}>
+                          <span aria-hidden="true">{covered ? "✓" : "!"}</span>
+                          <span className="sr-only">{covered ? "Covered" : `${formatNumber(total - owned)} short`}</span>
+                        </span>
                       )}
-                    </article>
-                  );
-                })}
-              </div>
+                    </div>
+
+                    {open && (
+                      <div className="resource-breakdown">
+                        {itemCosts.filter(({ cost }) => cost[resource]).map(({ item, cost }) => {
+                          const index = items.findIndex((entry) => entry.id === item.id);
+                          return (
+                            <div key={item.id}>
+                              <span>{itemLabel(item, index)}</span>
+                              <strong>{formatNumber(cost[resource])}</strong>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </article>
+                );
+              })}
             </div>
+
+            <p className="manifest-note">
+              Numbers are per item unless noted. Turn on inventory check to compare what you own with the plan.
+            </p>
           </aside>
         </div>
-
-        <section className="intelligence" aria-labelledby="intelligence-heading">
-          <div className="section-heading">
-            <div>
-              <p className="section-index">03 / Upgrade intelligence</p>
-              <h2 id="intelligence-heading">Cost trajectory</h2>
-            </div>
-            <span className="section-note">Planned levels highlighted</span>
-          </div>
-
-          <div className="trajectory-card">
-            <div className="trajectory-copy">
-              <p>Advanced material pressure</p>
-              <span>Field Recon, SHD Calibration, and Exotic Components scale sharply after Expertise 12.</span>
-            </div>
-            <div className="timeline" role="img" aria-label="Advanced material pressure across Expertise levels 1 through 30">
-              {timeline.map((row) => (
-                <div className={`timeline-cell ${row.active ? "active" : ""}`} key={row.level} title={`Level ${row.level}: ${row.exotic} Exotic, ${row.shd} SHD, ${row.recon} Recon`}>
-                  <span style={{ height: `${Math.max(row.active ? 8 : 3, (row.score / maxTimelineScore) * 100)}%` }} />
-                  <small>{row.level % 5 === 0 || row.level === 1 ? row.level : ""}</small>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="checkpoint-grid">
-            {checkpointTotals.map(({ checkpoint, totals: checkpointCost }) => (
-              <article className={checkpoint === 30 ? "featured" : ""} key={checkpoint}>
-                <div><span>Target</span><strong>{checkpoint}</strong></div>
-                <dl>
-                  <div><dt>Exotics</dt><dd>{formatNumber(checkpointCost.exotic_components)}</dd></div>
-                  <div><dt>SHD</dt><dd>{formatNumber(checkpointCost.shd_calibration)}</dd></div>
-                  <div><dt>Recon</dt><dd>{formatNumber(checkpointCost.field_recon_data)}</dd></div>
-                </dl>
-              </article>
-            ))}
-          </div>
-        </section>
-
       </main>
 
       <footer>
-        <div>
-          <strong>SHD Quartermaster</strong>
-          <span>Unofficial community tool. Not affiliated with Ubisoft or Massive Entertainment.</span>
-        </div>
+        <span>Unofficial community tool. Not affiliated with Ubisoft or Massive Entertainment.</span>
         <div>
           <a href={COST_DATA_SOURCE} target="_blank" rel="noreferrer">Cost table · {COST_DATA_DATE}</a>
-          <a href={OFFICIAL_CAP_SOURCE} target="_blank" rel="noreferrer">Official level-cap source</a>
+          <a href={OFFICIAL_CAP_SOURCE} target="_blank" rel="noreferrer">Level-cap source</a>
           <a href="https://github.com/skuldgerry/division2-expertise-calculator" target="_blank" rel="noreferrer">GitHub</a>
         </div>
       </footer>
