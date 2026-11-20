@@ -1,16 +1,52 @@
 import assert from "node:assert/strict";
-import test from "node:test";
+import { spawn } from "node:child_process";
+import { setTimeout as delay } from "node:timers/promises";
+import test, { after, before } from "node:test";
+
+const origin = "http://127.0.0.1:4174";
+let preview;
+let previewOutput = "";
+
+before(async () => {
+  // The built Worker imports cloudflare: modules. Exercise it in the same
+  // local workerd runtime as production preview rather than Node's ESM loader.
+  preview = spawn(process.execPath, [
+    "node_modules/vite/bin/vite.js", "preview", "--host", "127.0.0.1",
+    "--port", "4174", "--strictPort",
+  ], { stdio: ["ignore", "pipe", "pipe"] });
+  for (const stream of [preview.stdout, preview.stderr]) {
+    stream.on("data", (chunk) => {
+      previewOutput = (previewOutput + chunk.toString()).slice(-8000);
+    });
+  }
+  const deadline = Date.now() + 60_000;
+  while (Date.now() < deadline) {
+    if (preview.exitCode !== null) break;
+    try {
+      const response = await fetch(origin, { signal: AbortSignal.timeout(1000) });
+      if (response.ok) return;
+      await response.body?.cancel();
+    } catch {
+      // Preview may still be starting its Worker.
+    }
+    await delay(100);
+  }
+  throw new Error(`Worker preview did not become ready:\n${previewOutput}`);
+}, { timeout: 65_000 });
+
+after(async () => {
+  if (!preview || preview.exitCode !== null) return;
+  preview.kill("SIGTERM");
+  const deadline = Date.now() + 5000;
+  while (preview.exitCode === null && Date.now() < deadline) await delay(50);
+  if (preview.exitCode === null) preview.kill("SIGKILL");
+});
 
 async function render() {
-  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
-  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
-  const { default: worker } = await import(workerUrl.href);
-
-  return worker.fetch(
-    new Request("http://localhost/", { headers: { accept: "text/html" } }),
-    { ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } },
-    { waitUntil() {}, passThroughOnException() {} },
-  );
+  return fetch(origin, {
+    headers: { accept: "text/html" },
+    signal: AbortSignal.timeout(10_000),
+  });
 }
 
 test("server-renders the finished Expertise calculator", async () => {
