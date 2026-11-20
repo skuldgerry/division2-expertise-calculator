@@ -1,16 +1,62 @@
 import assert from "node:assert/strict";
-import test from "node:test";
+import { spawn } from "node:child_process";
+import { createServer } from "node:net";
+import { setTimeout as delay } from "node:timers/promises";
+import test, { after, before } from "node:test";
+
+let origin;
+let preview;
+let previewOutput = "";
+
+before(async () => {
+  const reservation = createServer();
+  await new Promise((resolve, reject) => {
+    reservation.once("error", reject);
+    reservation.listen(0, "127.0.0.1", resolve);
+  });
+  const port = reservation.address().port;
+  await new Promise((resolve, reject) => reservation.close((error) => error ? reject(error) : resolve()));
+  origin = `http://127.0.0.1:${port}`;
+  // The built Worker imports cloudflare: modules. Exercise it in the same
+  // local workerd runtime as production preview rather than Node's ESM loader.
+  preview = spawn(process.execPath, [
+    "node_modules/vite/bin/vite.js", "preview", "--host", "127.0.0.1",
+    "--port", String(port), "--strictPort",
+  ], { stdio: ["ignore", "pipe", "pipe"] });
+  for (const stream of [preview.stdout, preview.stderr]) {
+    stream.on("data", (chunk) => {
+      previewOutput = (previewOutput + chunk.toString()).slice(-8000);
+    });
+  }
+  const deadline = Date.now() + 60_000;
+  while (Date.now() < deadline) {
+    if (preview.exitCode !== null || preview.signalCode !== null) break;
+    try {
+      const response = await fetch(origin, { signal: AbortSignal.timeout(1000) });
+      const ready = response.ok;
+      await response.body?.cancel();
+      if (ready) return;
+    } catch {
+      // Preview may still be starting its Worker.
+    }
+    await delay(100);
+  }
+  throw new Error(`Worker preview did not become ready:\n${previewOutput}`);
+}, { timeout: 65_000 });
+
+after(async () => {
+  if (!preview || preview.exitCode !== null || preview.signalCode !== null) return;
+  preview.kill("SIGTERM");
+  const deadline = Date.now() + 5000;
+  while (preview.exitCode === null && preview.signalCode === null && Date.now() < deadline) await delay(50);
+  if (preview.exitCode === null && preview.signalCode === null) preview.kill("SIGKILL");
+});
 
 async function render() {
-  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
-  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
-  const { default: worker } = await import(workerUrl.href);
-
-  return worker.fetch(
-    new Request("http://localhost/", { headers: { accept: "text/html" } }),
-    { ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } },
-    { waitUntil() {}, passThroughOnException() {} },
-  );
+  return fetch(origin, {
+    headers: { accept: "text/html" },
+    signal: AbortSignal.timeout(10_000),
+  });
 }
 
 test("server-renders the finished Expertise calculator", async () => {

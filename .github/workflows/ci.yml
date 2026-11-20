@@ -45,3 +45,20 @@ jobs:
 
       - name: Check exported page
         run: test -s dist/client/index.html
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Test exported calculator in Chromium
+        run: |
+          ln -s client dist/division2-expertise-calculator
+          npm run test:browser
+
+      - name: Upload browser failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-test-results
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
