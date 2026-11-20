@@ -4,6 +4,9 @@ const planKey = "expertise-calculator-plan-v3";
 
 async function openCalculator(page) {
   const errors = [];
+  page.on("response", (response) => {
+    if (response.status() >= 400) errors.push(`${response.status()} ${response.url()}`);
+  });
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text());

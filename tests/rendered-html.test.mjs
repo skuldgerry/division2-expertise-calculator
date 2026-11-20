@@ -22,6 +22,11 @@ before(async () => {
   const deadline = Date.now() + 60_000;
   while (Date.now() < deadline) {
     if (preview.exitCode !== null) break;
+    // Do not accidentally accept an unrelated server already using this port.
+    if (!previewOutput.includes(origin)) {
+      await delay(100);
+      continue;
+    }
     try {
       const response = await fetch(origin, { signal: AbortSignal.timeout(1000) });
       const ready = response.ok;
