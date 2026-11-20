@@ -36,6 +36,12 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Verify migration generation
+        run: |
+          migration_dir="$(mktemp -d)"
+          npm run db:generate -- --dialect sqlite --schema ./examples/d1/db/schema.ts --out "$migration_dir"
+          test -n "$(find "$migration_dir" -name '*.sql' -size +0c -print -quit)"
+
       - name: Build GitHub Pages export
         env:
           GITHUB_PAGES: "true"
