@@ -24,8 +24,9 @@ before(async () => {
     if (preview.exitCode !== null) break;
     try {
       const response = await fetch(origin, { signal: AbortSignal.timeout(1000) });
-      if (response.ok) return;
+      const ready = response.ok;
       await response.body?.cancel();
+      if (ready) return;
     } catch {
       // Preview may still be starting its Worker.
     }
@@ -35,11 +36,11 @@ before(async () => {
 }, { timeout: 65_000 });
 
 after(async () => {
-  if (!preview || preview.exitCode !== null) return;
+  if (!preview || preview.exitCode !== null || preview.signalCode !== null) return;
   preview.kill("SIGTERM");
   const deadline = Date.now() + 5000;
-  while (preview.exitCode === null && Date.now() < deadline) await delay(50);
-  if (preview.exitCode === null) preview.kill("SIGKILL");
+  while (preview.exitCode === null && preview.signalCode === null && Date.now() < deadline) await delay(50);
+  if (preview.exitCode === null && preview.signalCode === null) preview.kill("SIGKILL");
 });
 
 async function render() {
