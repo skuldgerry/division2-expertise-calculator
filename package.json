@@ -13,7 +13,7 @@
   },
   "scripts": {
     "dev": "vinext dev",
-    "build": "vinext build",
+    "build": "vinext build && node build/prepare-pages-export.mjs",
     "start": "vinext start",
     "test": "npm run build && node --test tests/*.test.mjs",
     "test:browser": "playwright test",
