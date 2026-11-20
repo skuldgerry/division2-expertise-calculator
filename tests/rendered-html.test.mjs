@@ -1,18 +1,27 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
+import { createServer } from "node:net";
 import { setTimeout as delay } from "node:timers/promises";
 import test, { after, before } from "node:test";
 
-const origin = "http://127.0.0.1:4174";
+let origin;
 let preview;
 let previewOutput = "";
 
 before(async () => {
+  const reservation = createServer();
+  await new Promise((resolve, reject) => {
+    reservation.once("error", reject);
+    reservation.listen(0, "127.0.0.1", resolve);
+  });
+  const port = reservation.address().port;
+  await new Promise((resolve, reject) => reservation.close((error) => error ? reject(error) : resolve()));
+  origin = `http://127.0.0.1:${port}`;
   // The built Worker imports cloudflare: modules. Exercise it in the same
   // local workerd runtime as production preview rather than Node's ESM loader.
   preview = spawn(process.execPath, [
     "node_modules/vite/bin/vite.js", "preview", "--host", "127.0.0.1",
-    "--port", "4174", "--strictPort",
+    "--port", String(port), "--strictPort",
   ], { stdio: ["ignore", "pipe", "pipe"] });
   for (const stream of [preview.stdout, preview.stderr]) {
     stream.on("data", (chunk) => {
@@ -21,12 +30,7 @@ before(async () => {
   }
   const deadline = Date.now() + 60_000;
   while (Date.now() < deadline) {
-    if (preview.exitCode !== null) break;
-    // Do not accidentally accept an unrelated server already using this port.
-    if (!previewOutput.includes(origin)) {
-      await delay(100);
-      continue;
-    }
+    if (preview.exitCode !== null || preview.signalCode !== null) break;
     try {
       const response = await fetch(origin, { signal: AbortSignal.timeout(1000) });
       const ready = response.ok;
